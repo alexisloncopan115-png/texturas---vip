@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso VIP Exclusive</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vip-orange: #ff8c00;
+            --vip-dark: #050505;
+            --vip-gray: #121212;
+        }
+
+        * { font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: var(--vip-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 140, 0, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 140, 0, 0.08) 0%, transparent 40%);
+            color: white;
+            margin: 0;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        .vip-card {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, var(--vip-orange), transparent 30%);
+            animation: rotate 4s linear infinite;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .vip-card-inner {
+            background: var(--vip-gray);
+            border-radius: 1.5rem;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .neon-text {
+            color: var(--vip-orange);
+            text-shadow: 0 0 15px rgba(255, 140, 0, 0.6);
+        }
+
+        .vip-button {
+            background: linear-gradient(90deg, #ff8c00, #ffb347);
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+
+        .vip-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .animate-in {
+            animation: fadeInScale 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9) translateY(30px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .premium-input {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 140, 0, 0.15) !important;
+            transition: 0.3s;
+        }
+
+        .premium-input:focus {
+            border-color: var(--vip-orange) !important;
+            background: rgba(255, 255, 255, 0.07) !important;
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-6">
+
+    <div id="app-container" class="w-full max-w-md">
+        
+        <!-- PANTALLA 1: INICIO -->
+        <div id="start-screen" class="vip-card p-[2px] rounded-[2rem] animate-in">
+            <div class="vip-card-inner p-10 flex flex-col items-center text-center">
+                <div class="mb-8">
+                    <div class="w-24 h-24 rounded-full border-4 border-[#ff8c00]/30 flex items-center justify-center bg-black/50">
+                        <svg class="w-12 h-12 text-[#ff8c00] animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-black text-white mb-4 leading-tight italic uppercase">
+                    Necesitamos <span class="neon-text">confirmar</span> tu usuario para seguir
+                </h2>
+                <button id="btn-start" class="w-full py-5 vip-button text-black font-black uppercase tracking-widest rounded-2xl text-lg">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 2: LOGIN -->
+        <div id="login-screen" class="hidden vip-card p-[2px] rounded-[2rem] animate-in">
+            <div class="vip-card-inner p-8">
+                <div class="flex flex-col items-center mb-8">
+                    <span class="text-[10px] tracking-[5px] font-extrabold uppercase text-[#ff8c00] mb-2">Credenciales VIP</span>
+                    <h1 class="text-2xl font-black text-white italic">INICIAR SESIÓN</h1>
+                </div>
+                <form id="login-form" class="space-y-5">
+                    <input type="text" id="input-user" required placeholder="Usuario" class="w-full px-5 py-4 rounded-xl premium-input text-white outline-none">
+                    <input type="password" id="input-pass" required placeholder="Contraseña" class="w-full px-5 py-4 rounded-xl premium-input text-white outline-none">
+                    <div id="error-msg" class="hidden text-red-500 text-[11px] font-bold uppercase text-center">Datos incorrectos</div>
+                    <div class="pt-4 space-y-3">
+                        <button type="submit" id="btn-login-submit" class="w-full py-4 vip-button text-black font-bold uppercase rounded-xl">Entrar</button>
+                        <button type="button" id="btn-goto-register" class="w-full py-3 text-gray-400 text-xs font-bold uppercase">Crear Usuario</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: REGISTRO -->
+        <div id="register-screen" class="hidden vip-card p-[2px] rounded-[2rem] animate-in">
+            <div class="vip-card-inner p-8">
+                <h1 class="text-2xl font-black text-white italic text-center mb-6 uppercase">Nuevo Registro</h1>
+                <form id="register-form" class="space-y-4">
+                    <input type="text" id="reg-name" required placeholder="Nombre" class="w-full px-5 py-3 rounded-xl premium-input text-white outline-none">
+                    <input type="text" id="reg-user" required placeholder="Usuario" class="w-full px-5 py-3 rounded-xl premium-input text-white outline-none">
+                    <input type="password" id="reg-pass" required placeholder="Contraseña" class="w-full px-5 py-3 rounded-xl premium-input text-white outline-none">
+                    <input type="password" id="reg-confirm" required placeholder="Confirmar Contraseña" class="w-full px-5 py-3 rounded-xl premium-input text-white outline-none">
+                    <div id="reg-error-msg" class="hidden text-red-500 text-[10px] font-bold uppercase text-center"></div>
+                    <button type="submit" id="btn-reg-submit" class="w-full py-4 vip-button text-black font-bold uppercase rounded-xl">Registrarme</button>
+                    <button type="button" id="btn-back-login" class="w-full py-2 text-gray-500 text-[10px] font-bold uppercase">Volver</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- PANTALLA 4: ÉXITO -->
+        <div id="success-screen" class="hidden vip-card p-[2px] rounded-[2rem] animate-in">
+            <div class="vip-card-inner p-10 flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-[#ff8c00] rounded-full flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(255,140,0,0.6)]">
+                    <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h2 id="success-title" class="text-3xl font-black text-white italic mb-2 uppercase">¡LISTO!</h2>
+                <p id="success-desc" class="text-gray-400 text-[10px] tracking-widest uppercase mb-8 italic">Acceso concedido</p>
+                <div class="w-full bg-black/60 rounded-2xl p-6 border border-[#ff8c00]/20 mb-8">
+                    <p id="display-user" class="text-xl font-bold text-[#ff8c00]">---</p>
+                </div>
+                <button onclick="location.reload()" class="w-full py-4 bg-white/10 text-white font-bold rounded-xl border border-white/10 uppercase text-xs tracking-widest">Seguir</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK con manejo de errores para evitar pantalla en blanco -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db = null;
+        let auth = null;
+        let appId = 'default-app-id';
+        let currentUser = null;
+        let isFirebaseReady = false;
+
+        // Intentar inicializar Firebase solo si las variables existen
+        try {
+            if (typeof __firebase_config !== 'undefined') {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                
+                signInAnonymously(auth).then(() => {
+                    onAuthStateChanged(auth, (user) => {
+                        currentUser = user;
+                        isFirebaseReady = true;
+                    });
+                });
+            }
+        } catch (e) {
+            console.warn("Firebase no configurado. Funcionando en modo local.");
+        }
+
+        const defaultUsers = {
+            "referente": "1234",
+            "Altamente.13": "1234",
+            "Xican.net": "123"
+        };
+
+        const screens = {
+            start: document.getElementById('start-screen'),
+            login: document.getElementById('login-screen'),
+            register: document.getElementById('register-screen'),
+            success: document.getElementById('success-screen')
+        };
+
+        function showScreen(id) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[id].classList.remove('hidden');
+        }
+
+        document.getElementById('btn-start').onclick = () => showScreen('login');
+        document.getElementById('btn-goto-register').onclick = () => showScreen('register');
+        document.getElementById('btn-back-login').onclick = () => showScreen('login');
+
+        // LOGIN
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const u = document.getElementById('input-user').value;
+            const p = document.getElementById('input-pass').value;
+            const btn = document.getElementById('btn-login-submit');
+            btn.disabled = true;
+
+            // 1. Verificar default siempre
+            if (defaultUsers[u] && defaultUsers[u] === p) {
+                loginSuccess(u, "Admin");
+                btn.disabled = false;
+                return;
+            }
+
+            // 2. Verificar Firestore si está listo
+            if (isFirebaseReady && db) {
+                try {
+                    const userDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', u));
+                    if (userDoc.exists() && userDoc.data().pass === p) {
+                        loginSuccess(u, "Miembro VIP");
+                    } else {
+                        showError('login');
+                    }
+                } catch (err) {
+                    showError('login');
+                }
+            } else {
+                // Si no hay Firebase, solo entran los default
+                showError('login');
+            }
+            btn.disabled = false;
+        };
+
+        // REGISTRO
+        document.getElementById('register-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const user = document.getElementById('reg-user').value;
+            const pass = document.getElementById('reg-pass').value;
+            const confirm = document.getElementById('reg-confirm').value;
+            const errorLabel = document.getElementById('reg-error-msg');
+            const btn = document.getElementById('btn-reg-submit');
+
+            if (pass !== confirm) {
+                errorLabel.textContent = "Las contraseñas no coinciden";
+                errorLabel.classList.remove('hidden');
+                return;
+            }
+
+            if (!isFirebaseReady) {
+                errorLabel.textContent = "Base de datos no disponible en modo local";
+                errorLabel.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user), {
+                    name, user, pass, createdAt: new Date().toISOString()
+                });
+                
+                document.getElementById('success-title').textContent = "¡FELICIDADES!";
+                document.getElementById('success-desc').textContent = "Has creado tu usuario exitosamente";
+                document.getElementById('display-user').textContent = user;
+                showScreen('success');
+            } catch (err) {
+                errorLabel.textContent = "Error al registrar";
+                errorLabel.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        function loginSuccess(user, type) {
+            document.getElementById('success-title').textContent = "BIENVENIDO";
+            document.getElementById('success-desc').textContent = type;
+            document.getElementById('display-user').textContent = user;
+            showScreen('success');
+        }
+
+        function showError(type) {
+            const el = type === 'login' ? document.getElementById('error-msg') : document.getElementById('reg-error-msg');
+            const card = type === 'login' ? screens.login : screens.register;
+            el.classList.remove('hidden');
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 500);
+        }
+    </script>
+</body>
+</html>
