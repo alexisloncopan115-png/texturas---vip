@@ -7,9 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Librería para el efecto de confeti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+        /* Optimizaciones de rendimiento para 60 FPS */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
             background-color: #050505;
@@ -19,7 +25,7 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            overflow-x: hidden;
+            overflow: hidden; /* Evitar scrollbars innecesarios que causen layout shifts */
         }
 
         @keyframes rgb-flow {
@@ -28,39 +34,39 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* --- ANIMACIONES DE TRANSICIÓN SUAVE --- */
+        /* Animaciones optimizadas con transform y opacity */
         @keyframes fade-in {
-            from { opacity: 0; transform: translateY(10px); filter: blur(5px); }
-            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+            from { opacity: 0; transform: translate3d(0, 10px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
         }
 
         @keyframes fade-out {
-            from { opacity: 1; transform: translateY(0); filter: blur(0); }
-            to { opacity: 0; transform: translateY(-10px); filter: blur(5px); }
+            from { opacity: 1; transform: translate3d(0, 0, 0); }
+            to { opacity: 0; transform: translate3d(0, -10px, 0); }
         }
 
         @keyframes tear-out {
-            0% { transform: translateX(0) skewX(0deg); opacity: 1; clip-path: inset(0 0 0 0); }
-            20% { transform: translateX(-10px) skewX(-5deg); clip-path: inset(10% 0 40% 0); }
-            40% { transform: translateX(20px) skewX(10deg); clip-path: inset(50% 0 10% 0); }
-            60% { transform: translateX(-50px) scaleY(0.8); opacity: 0.8; clip-path: inset(30% 0 30% 0); }
-            100% { transform: translateX(-200%) skewX(-20deg); opacity: 0; clip-path: inset(0 0 0 0); }
+            0% { transform: translate3d(0, 0, 0) skewX(0deg); opacity: 1; }
+            20% { transform: translate3d(-10px, 0, 0) skewX(-5deg); }
+            100% { transform: translate3d(-150%, 0, 0) skewX(-20deg); opacity: 0; }
         }
 
         .section-fade-in {
-            animation: fade-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: fade-in 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            will-change: opacity, transform;
         }
 
         .section-fade-out {
-            animation: fade-out 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: fade-out 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+            will-change: opacity, transform;
         }
 
         .animate-tear-left {
-            animation: tear-out 0.7s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+            animation: tear-out 0.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
             pointer-events: none;
+            will-change: transform, opacity;
         }
 
-        /* --- ESTILOS BASE --- */
         .top-glow {
             position: fixed;
             top: 0;
@@ -69,38 +75,29 @@
             height: 350px;
             background: linear-gradient(90deg, #38bdf8, #2563eb, #ec4899, #9333ea, #7c3aed, #38bdf8);
             background-size: 300% 300%;
-            animation: rgb-flow 8s ease infinite;
+            animation: rgb-flow 8s linear infinite;
             z-index: -1;
             filter: blur(80px);
             opacity: 0.15;
             mask-image: radial-gradient(50% 100% at 50% 0%, black, transparent);
-        }
-
-        .bg-glow {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
-            z-index: -1;
-            filter: blur(100px);
+            will-change: background-position;
         }
 
         .glass-card {
             background: rgba(12, 12, 14, 0.92);
             backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 2.5rem;
-            width: 100%;
+            width: 90%;
             max-width: 380px;
-            padding: 3rem 1.5rem 2.5rem 1.5rem; /* Ajuste padding superior */
+            padding: 3.5rem 1.5rem 2.5rem 1.5rem;
             box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
             text-align: center;
             position: relative;
             overflow: hidden;
-            transition: all 0.5s ease;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: transform;
         }
 
         .glass-card::before {
@@ -113,17 +110,16 @@
             background: linear-gradient(90deg, #38bdf8, #2563eb, #ec4899, #9333ea, #7c3aed, #38bdf8);
             background-size: 200% auto;
             animation: rgb-flow 4s linear infinite;
-            box-shadow: 0 0 15px rgba(147, 51, 234, 0.3);
             z-index: 20;
+            will-change: background-position;
         }
 
-        /* Botón posicionado en la diagonal superior izquierda */
         .btn-back-absolute {
             position: absolute;
-            top: 1.2rem;
-            left: 1.2rem;
-            width: 36px;
-            height: 36px;
+            top: 1.25rem;
+            left: 1.25rem;
+            width: 38px;
+            height: 38px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -131,16 +127,40 @@
             align-items: center;
             justify-content: center;
             color: #94a3b8;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease;
             z-index: 50;
+            cursor: pointer;
         }
 
         .btn-back-absolute:hover {
             background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
             color: white;
             transform: scale(1.05);
         }
+
+        .btn-action {
+            width: 100%;
+            padding: 1.1rem;
+            border-radius: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            will-change: transform;
+        }
+
+        .btn-action:active {
+            transform: scale(0.97);
+        }
+
+        .btn-keys { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; }
+        .btn-outline { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: #94a3b8; }
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
 
         .input-group {
             background: rgba(255, 255, 255, 0.03);
@@ -151,6 +171,11 @@
             align-items: center;
             gap: 0.75rem;
             margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-group:focus-within {
+            border-color: rgba(56, 189, 248, 0.5);
         }
 
         .input-field {
@@ -162,74 +187,6 @@
             font-size: 0.85rem;
         }
 
-        .btn-action {
-            width: 100%;
-            padding: 1.1rem;
-            border-radius: 1rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            transition: all 0.4s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            font-size: 0.75rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-keys {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            color: white;
-        }
-
-        .btn-outline {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #94a3b8;
-        }
-
-        .btn-vip {
-            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
-            color: white;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-        }
-
-        .step-circle {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 800;
-            color: #64748b;
-            transition: all 0.3s;
-        }
-
-        .step-circle.active {
-            background: linear-gradient(135deg, #38bdf8, #a855f7);
-            color: white;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
-            border: none;
-        }
-
-        .step-line {
-            flex: 1;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
         .ai-text-gradient {
             background: linear-gradient(90deg, #38bdf8, #ec4899, #9333ea, #38bdf8);
             background-size: 200% auto;
@@ -237,440 +194,250 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 900;
+            will-change: background-position;
         }
 
         .hidden-section { display: none; }
-        
-        .loader-ring {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .main-loader {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.05);
-            border-top: 4px solid #38bdf8;
-            animation: spin 1s linear infinite;
-        }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        .main-loader {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-top: 3px solid #38bdf8;
+            animation: spin 0.8s linear infinite;
+            will-change: transform;
+        }
+
+        /* Utilidades para GPU */
+        .gpu-accelerated {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
     </style>
 </head>
-<body>
+<body class="gpu-accelerated">
 
     <div class="top-glow"></div>
-    <div class="bg-glow"></div>
 
     <div class="glass-card" id="main-card">
         
         <!-- PANTALLA 1: BIENVENIDA -->
         <div id="welcome-section" class="section-fade-in">
-            <div class="mb-8 inline-flex p-4 rounded-3xl bg-white/5 border border-white/10 mt-4">
+            <div class="mb-8 inline-flex p-4 rounded-3xl bg-white/5 border border-white/10 mt-2">
                 <i data-lucide="shield-check" class="w-12 h-12 text-[#38bdf8]"></i>
             </div>
             <h1 class="text-[10px] font-black text-gray-600 uppercase tracking-[0.6em] mb-2">XICAN INTERFACE</h1>
             <h2 class="text-4xl font-black mb-10 italic tracking-tighter">INICIAR CON</h2>
-            <div class="space-y-5">
-                <button onclick="triggerTearTransition('login')" id="btn-keys-welcome" class="btn-action btn-keys">
+            <div class="space-y-4">
+                <button onclick="triggerTearTransition('login')" class="btn-action btn-keys">
                     <i data-lucide="key-round" class="w-5 h-5"></i> Keys de Acceso
                 </button>
-                <button onclick="triggerTearTransition('guest')" id="btn-guest-welcome" class="btn-action btn-outline">
+                <button onclick="triggerTearTransition('guest')" class="btn-action btn-outline">
                     <i data-lucide="user-circle" class="w-5 h-5"></i> Invitado
                 </button>
             </div>
         </div>
 
-        <!-- PANTALLA INVITADO: SOLICITAR CÓDIGO -->
+        <!-- PANTALLA INVITADO: SOLICITAR -->
         <div id="guest-request-section" class="hidden-section">
             <button onclick="showSection('welcome')" class="btn-back-absolute">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
             <div class="mb-6 inline-flex p-4 rounded-full bg-orange-500/10 border border-orange-500/20 mt-4">
                 <i data-lucide="alert-triangle" class="w-12 h-12 text-orange-500"></i>
             </div>
-            <h2 class="text-2xl font-black italic tracking-tighter mb-4">NECESITAS UN CÓDIGO DE ACCESO</h2>
-            <p class="text-[10px] text-gray-400 font-bold mb-8 uppercase tracking-widest px-4">El modo invitado requiere una llave temporal generada por el servidor.</p>
-            <button onclick="handleRequestCode()" id="btn-request-code" class="btn-action btn-keys">
-                <span>SOLICITAR</span>
-            </button>
+            <h2 class="text-2xl font-black italic tracking-tighter mb-4">SOLICITAR CÓDIGO</h2>
+            <p class="text-[10px] text-gray-400 font-bold mb-8 uppercase tracking-widest px-4">Llave temporal generada por el servidor.</p>
+            <button onclick="handleRequestCode()" id="btn-request-code" class="btn-action btn-keys">SOLICITAR</button>
         </div>
 
-        <!-- PANTALLA INVITADO: CÓDIGO ASIGNADO -->
+        <!-- PANTALLA INVITADO: CÓDIGO -->
         <div id="guest-code-section" class="hidden-section">
             <button onclick="showSection('guest-request')" class="btn-back-absolute">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
-            <h2 class="text-xl font-black italic tracking-tighter mb-6 mt-6">CÓDIGO ASIGNADO</h2>
+            <h2 class="text-xl font-black italic tracking-tighter mb-6 mt-6 uppercase">Código de Sesión</h2>
             <div class="bg-white/5 border border-white/10 p-6 rounded-2xl mb-6">
                 <span class="text-5xl font-black italic tracking-widest ai-text-gradient">414623</span>
             </div>
             <div class="space-y-4">
-                <button onclick="copyGuestCode()" class="btn-action btn-outline">
-                    <i data-lucide="copy" class="w-4 h-4"></i> COPIAR CÓDIGO
-                </button>
-                <button onclick="showSection('guest-insert')" class="btn-action btn-keys">
-                    SEGUIR <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
-                </button>
+                <button onclick="copyGuestCode()" class="btn-action btn-outline">COPIAR</button>
+                <button onclick="showSection('guest-insert')" class="btn-action btn-keys">CONTINUAR</button>
             </div>
         </div>
 
-        <!-- PANTALLA INVITADO: INSERTAR CÓDIGO -->
+        <!-- PANTALLA INVITADO: INSERTAR -->
         <div id="guest-insert-section" class="hidden-section">
             <button onclick="showSection('guest-code')" class="btn-back-absolute">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
-            <h2 class="text-2xl font-black italic tracking-tighter mb-2 mt-6">INSERTAR CÓDIGO</h2>
-            <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-8">Pega el código generado anteriormente</p>
+            <h2 class="text-2xl font-black italic tracking-tighter mb-8 mt-6 uppercase">Insertar</h2>
             <div class="input-group">
-                <i data-lucide="key" class="w-4 h-4 text-gray-500"></i>
-                <input type="text" id="guest-code-input" placeholder="Código de 6 dígitos" class="input-field text-center tracking-widest font-bold">
+                <input type="text" id="guest-code-input" placeholder="000000" class="input-field text-center tracking-[1em] font-black text-xl">
             </div>
-            <button onclick="validateGuestCode()" class="btn-action btn-keys mt-4">CONFIRMAR</button>
+            <button onclick="validateGuestCode()" class="btn-action btn-keys mt-4">VERIFICAR</button>
         </div>
 
-        <!-- PANTALLA INVITADO: ÉXITO COLABORADOR -->
-        <div id="guest-success-section" class="hidden-section py-8">
-            <button onclick="showSection('guest-insert')" class="btn-back-absolute">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            </button>
-            <div class="mb-6 inline-flex p-5 rounded-full bg-cyan-500/20 border border-cyan-500/30 mt-4">
-                <i data-lucide="users" class="w-14 h-14 text-cyan-500"></i>
-            </div>
-            <h2 class="text-2xl font-black italic tracking-tighter text-cyan-500 mb-2 leading-tight">¡FELICIDADES!</h2>
-            <p class="text-sm font-bold mb-6">HAS ENTRADO AL PROGRAMA DE COLABORADORES</p>
-            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-10 px-4">Ahora tienes acceso a herramientas exclusivas de la comunidad XICAN.</p>
-            
-            <button onclick="location.reload()" class="btn-action btn-success">
-                EMPEZAR A COLABORAR
-            </button>
-        </div>
-
-        <!-- PANTALLA 2: LOGIN -->
+        <!-- PANTALLA LOGIN -->
         <div id="login-section" class="hidden-section">
             <button onclick="showSection('welcome')" class="btn-back-absolute">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
-            <h2 class="text-2xl font-black italic tracking-tighter text-[#38bdf8] mb-1 mt-6">AUTENTICACIÓN</h2>
-            <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-8">Ingrese sus credenciales XICAN</p>
-            <div class="input-group">
-                <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
-                <input type="text" id="username" placeholder="Usuario" class="input-field">
+            <h2 class="text-2xl font-black italic tracking-tighter text-[#38bdf8] mb-8 mt-6">AUTENTICACIÓN</h2>
+            <div class="space-y-3">
+                <div class="input-group">
+                    <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
+                    <input type="text" id="username" placeholder="Usuario" class="input-field">
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock" class="w-4 h-4 text-gray-500"></i>
+                    <input type="password" id="password" placeholder="Contraseña" class="input-field">
+                </div>
+                <div class="input-group">
+                    <i data-lucide="hash" class="w-4 h-4 text-gray-500"></i>
+                    <input type="text" id="key" placeholder="Key A1BN..." class="input-field">
+                </div>
             </div>
-            <div class="input-group">
-                <i data-lucide="lock" class="w-4 h-4 text-gray-500"></i>
-                <input type="password" id="password" placeholder="Contraseña" class="input-field">
-            </div>
-            <div class="input-group">
-                <i data-lucide="hash" class="w-4 h-4 text-gray-500"></i>
-                <input type="text" id="key" placeholder="Key de Acceso" class="input-field">
-            </div>
-            <button onclick="validateAccess()" class="btn-action btn-keys mt-4">Validar Acceso</button>
+            <button onclick="validateAccess()" class="btn-action btn-keys mt-6">ENTRAR</button>
         </div>
 
-        <!-- PANTALLA 3: CARGA GLOBAL -->
+        <!-- LOADER -->
         <div id="loading-section" class="hidden-section py-10">
-            <div class="flex flex-col items-center justify-center">
+            <div class="flex flex-col items-center">
                 <div class="main-loader mb-6"></div>
-                <h3 class="text-xl font-black italic animate-pulse">VERIFICANDO...</h3>
-                <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-2">Sincronizando con Xican Engine</p>
+                <h3 class="text-sm font-black italic tracking-widest animate-pulse">SINCRO XICAN...</h3>
             </div>
         </div>
 
-        <!-- PANTALLA 4: VERIFICACIÓN POR PASOS -->
-        <div id="verify-section" class="hidden-section">
-            <button onclick="showSection('login')" class="btn-back-absolute">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            </button>
-            <div class="flex justify-between items-center mb-6 mt-4">
-                <div class="w-8"></div>
-                <h2 class="text-xl font-black tracking-tight">Verify <span class="ai-text-gradient">Astutech Account</span></h2>
-                <button class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
-                    <i data-lucide="globe" class="w-4 h-4 text-gray-500"></i>
-                </button>
+        <!-- ÉXITO -->
+        <div id="guest-success-section" class="hidden-section py-8">
+            <div class="mb-6 inline-flex p-5 rounded-full bg-cyan-500/20 border border-cyan-500/30">
+                <i data-lucide="users" class="w-14 h-14 text-cyan-500"></i>
             </div>
-
-            <div class="w-full aspect-square bg-white/5 border border-white/10 rounded-xl mb-6 overflow-hidden flex flex-col items-center justify-center p-4">
-                <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-4 border border-green-500/30">
-                    <i data-lucide="zap" class="text-green-500 w-10 h-10"></i>
-                </div>
-                <h4 class="text-lg font-black italic text-green-500">$ADZILLA</h4>
-                <p class="text-[10px] font-bold text-gray-400">REMEMBER HIS NAME</p>
-                <button class="mt-4 px-4 py-2 bg-green-500 text-black font-black text-[10px] rounded-lg">BUY ADZILLA MEMECOIN NOW</button>
-            </div>
-
-            <div class="flex items-center gap-2 mb-8 px-4">
-                <div class="step-circle" id="step-1">1</div>
-                <div class="step-line"></div>
-                <div class="step-circle" id="step-2">2</div>
-                <div class="step-line"></div>
-                <div class="step-circle" id="step-3">3</div>
-                <div class="step-line"></div>
-                <div class="step-circle" id="step-4">4</div>
-            </div>
-
-            <div id="phase-container">
-                <div id="phase-1" class="phase-content section-fade-in">
-                    <div class="input-group mb-4">
-                        <i data-lucide="shield-check" class="w-4 h-4 text-cyan-500"></i>
-                        <input type="text" id="vip-code" placeholder="Insertar Código VIP o PIN" class="input-field">
-                    </div>
-                    <button onclick="handleVipStep()" class="btn-action btn-vip">Ingresar Código</button>
-                </div>
-                <div id="phase-2" class="phase-content hidden-section">
-                    <button id="btn-verify" onclick="handleVerifyStep()" class="btn-action btn-keys"><span>Verificar</span></button>
-                </div>
-                <div id="phase-3" class="phase-content hidden-section">
-                    <button id="btn-proceed" onclick="handleProceedStep()" class="btn-action btn-keys"><span>Proseguir</span></button>
-                </div>
-                <div id="phase-4" class="phase-content hidden-section">
-                    <button onclick="handleFinalize()" class="btn-action btn-keys">Finalizar y Proseguir</button>
-                </div>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-white/5 text-center">
-                <p class="text-[10px] text-cyan-400 font-bold mb-4">💡 100% free — never sold anywhere.</p>
-                <p class="text-[9px] text-gray-600 font-bold">Questions? <span class="text-cyan-500">reportme@unlockffbeta.com</span></p>
-            </div>
+            <h2 class="text-2xl font-black italic tracking-tighter text-cyan-500 mb-2">COLABORADOR</h2>
+            <p class="text-xs font-bold mb-10 text-gray-400 px-4">ACCESO EXTERNO CONCEDIDO</p>
+            <button onclick="location.reload()" class="btn-action btn-success">FINALIZAR</button>
         </div>
 
-        <!-- PANTALLA 5: ACCESO CONCEDIDO (FINAL VIP) -->
-        <div id="success-section" class="hidden-section py-8">
-            <div class="mb-6 inline-flex p-5 rounded-full bg-green-500/20 border border-green-500/30">
-                <i data-lucide="unlock" class="w-14 h-14 text-green-500"></i>
-            </div>
-            <h2 class="text-3xl font-black italic tracking-tighter text-green-500 mb-2">ACCESO CONCEDIDO</h2>
-            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-10 px-4">Tu cuenta ha sido validada correctamente en el sistema XICAN.</p>
-            <button onclick="alert('Bienvenido al panel VIP')" class="btn-action btn-success group">
-                ENTRAR AL PANEL <i data-lucide="chevron-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-            </button>
-        </div>
-
-        <!-- Footer Global -->
-        <div class="mt-8" id="global-footer">
+        <!-- Footer -->
+        <div class="mt-10" id="global-footer">
             <div class="flex justify-center items-center gap-2 mb-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-[8px] font-black text-green-500 uppercase tracking-widest">Servidor Activo</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                <span class="text-[8px] font-black text-green-500 uppercase tracking-widest">Active Core 60Hz</span>
             </div>
-            <p class="text-[9px] text-gray-700 uppercase tracking-[0.3em] font-bold">
-                Powered by <span class="ai-text-gradient">XICAN ENGINE</span>
-            </p>
+            <p class="text-[9px] text-gray-700 uppercase tracking-[0.4em] font-bold">XICAN ENGINE v4.0</p>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // Inicializar iconos de Lucide
+        function initIcons() {
             if (typeof lucide !== 'undefined') lucide.createIcons();
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', initIcons);
 
         function showSection(id) {
             const sections = [
                 'welcome-section', 'login-section', 'loading-section', 
-                'verify-section', 'success-section', 'guest-request-section', 
-                'guest-code-section', 'guest-insert-section', 'guest-success-section'
+                'guest-request-section', 'guest-code-section', 
+                'guest-insert-section', 'guest-success-section'
             ];
             
-            let currentVisible = sections.find(s => {
-                const el = document.getElementById(s);
-                return el && !el.classList.contains('hidden-section');
-            });
-            
-            const showTarget = () => {
+            const current = sections.find(s => !document.getElementById(s).classList.contains('hidden-section'));
+            const targetId = id.includes('-section') ? id : id + '-section';
+            const targetEl = document.getElementById(targetId);
+
+            if (!targetEl) return;
+
+            const transition = () => {
                 sections.forEach(s => {
                     const el = document.getElementById(s);
-                    if(el) {
-                        el.classList.add('hidden-section');
-                        el.classList.remove('section-fade-in', 'section-fade-out');
-                    }
+                    if (el) el.classList.add('hidden-section');
                 });
                 
-                const target = document.getElementById(id + (id.includes('section') ? '' : '-section'));
-                if(target) {
-                    target.classList.remove('hidden-section');
-                    target.classList.add('section-fade-in');
-                }
-                
-                const footer = document.getElementById('global-footer');
-                const noFooterSections = ['verify', 'success', 'guest-success'];
-                if(footer) footer.style.display = noFooterSections.includes(id) ? 'none' : 'block';
-                
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                targetEl.classList.remove('hidden-section');
+                targetEl.classList.remove('section-fade-out');
+                targetEl.classList.add('section-fade-in');
+                initIcons();
             };
 
-            if (currentVisible) {
-                const currentEl = document.getElementById(currentVisible);
+            if (current) {
+                const currentEl = document.getElementById(current);
                 currentEl.classList.add('section-fade-out');
-                setTimeout(showTarget, 400);
+                // Tiempo exacto de la animación para evitar frames perdidos
+                setTimeout(transition, 300);
             } else {
-                showTarget();
+                transition();
             }
         }
 
         function triggerTearTransition(target) {
-            const container = document.getElementById('welcome-section');
-            container.classList.add('animate-tear-left');
+            const welcome = document.getElementById('welcome-section');
+            welcome.classList.add('animate-tear-left');
             
-            setTimeout(() => {
-                if (target === 'login') {
-                    showSection('login');
-                } else if (target === 'guest') {
-                    showSection('guest-request');
-                }
-                container.classList.remove('animate-tear-left');
-            }, 700);
+            // Usar requestAnimationFrame para asegurar que la transición ocurra en el siguiente frame
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    showSection(target === 'login' ? 'login' : 'guest-request');
+                    setTimeout(() => welcome.classList.remove('animate-tear-left'), 100);
+                }, 550);
+            });
         }
 
-        // FLUJO DE INVITADO
         function handleRequestCode() {
             const btn = document.getElementById('btn-request-code');
-            btn.innerHTML = `<div class="loader-ring"></div>`;
-            btn.disabled = true;
-            
+            btn.innerHTML = `<div class="main-loader" style="width:16px; height:16px; border-width:2px;"></div>`;
             setTimeout(() => {
                 showSection('guest-code');
-                btn.innerHTML = `<span>SOLICITAR</span>`;
-                btn.disabled = false;
-            }, 2000);
+                btn.innerHTML = 'SOLICITAR';
+            }, 1200);
         }
 
         function copyGuestCode() {
             const code = "414623";
-            const tempInput = document.createElement("input");
-            tempInput.value = code;
-            document.body.appendChild(tempInput);
-            tempInput.select();
+            const temp = document.createElement("input");
+            temp.value = code;
+            document.body.appendChild(temp);
+            temp.select();
             document.execCommand("copy");
-            document.body.removeChild(tempInput);
+            document.body.removeChild(temp);
             
             const btn = event.currentTarget;
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> COPIADO!`;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-            setTimeout(() => {
-                btn.innerHTML = originalHtml;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }, 2000);
+            btn.textContent = "COPIADO";
+            setTimeout(() => btn.textContent = "COPIAR", 1500);
         }
 
         function validateGuestCode() {
-            const input = document.getElementById('guest-code-input').value;
-            if (input === "414623") {
+            const val = document.getElementById('guest-code-input').value;
+            if (val === "414623") {
                 showSection('loading');
                 setTimeout(() => {
-                    handleConfetti();
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#38bdf8', '#a855f7'] });
                     showSection('guest-success');
                 }, 1500);
             } else {
-                alert("CÓDIGO INVÁLIDO");
+                alert("CÓDIGO ERRÓNEO");
             }
         }
 
-        // FLUJO VIP
         function validateAccess() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            const key = document.getElementById('key').value;
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const k = document.getElementById('key').value;
 
-            if (user === "Xican.net" && pass === "123" && key === "A1BN34ISM") {
+            if (u === "Xican.net" && p === "123" && k === "A1BN34ISM") {
                 showSection('loading');
                 setTimeout(() => {
-                    showSection('verify');
-                    updateStep(1);
+                    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+                    showSection('guest-success');
                 }, 2000);
             } else {
-                alert("ERROR: Credenciales inválidas.");
+                alert("ACCESO DENEGADO");
             }
-        }
-
-        function updateStep(step) {
-            const phases = ['phase-1', 'phase-2', 'phase-3', 'phase-4'];
-            let currentPhase = phases.find(p => !document.getElementById(p).classList.contains('hidden-section'));
-            
-            const showNextPhase = () => {
-                for (let i = 1; i <= 4; i++) {
-                    const el = document.getElementById(`step-${i}`);
-                    if(el) {
-                        el.classList.remove('active');
-                        if (i <= step) el.classList.add('active');
-                    }
-                }
-                phases.forEach(p => {
-                    const el = document.getElementById(p);
-                    if(el) {
-                        el.classList.add('hidden-section');
-                        el.classList.remove('section-fade-in', 'section-fade-out');
-                    }
-                });
-                const targetPhase = document.getElementById(`phase-${step}`);
-                if(targetPhase) {
-                    targetPhase.classList.remove('hidden-section');
-                    targetPhase.classList.add('section-fade-in');
-                }
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            };
-
-            if (currentPhase) {
-                const currentEl = document.getElementById(currentPhase);
-                currentEl.classList.add('section-fade-out');
-                setTimeout(showNextPhase, 400);
-            } else {
-                showNextPhase();
-            }
-        }
-
-        function handleVipStep() {
-            const pin = document.getElementById('vip-code').value;
-            if (pin === "41462008") {
-                updateStep(2);
-            } else {
-                alert("PIN INCORRECTO");
-            }
-        }
-
-        function handleVerifyStep() {
-            const btn = document.getElementById('btn-verify');
-            btn.innerHTML = `<div class="loader-ring"></div>`;
-            btn.disabled = true;
-            setTimeout(() => {
-                updateStep(3);
-            }, 1500);
-        }
-
-        function handleProceedStep() {
-            const btn = document.getElementById('btn-proceed');
-            btn.innerHTML = `<div class="loader-ring"></div>`;
-            btn.disabled = true;
-            setTimeout(() => {
-                updateStep(4);
-            }, 1500);
-        }
-
-        function handleFinalize() {
-            handleConfetti();
-            showSection('success');
-        }
-
-        function handleConfetti() {
-            const duration = 3 * 1000;
-            const animationEnd = Date.now() + duration;
-            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
-
-            function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
-            }
-
-            const interval = setInterval(function() {
-                const timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) return clearInterval(interval);
-                const particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-            }, 250);
         }
     </script>
 </body>
